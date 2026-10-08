@@ -1,0 +1,22 @@
+{
+  "name": "multi-agent-vedanti",
+  // Mac folder: /Users/VedantiV.Patil/Multi_Agent_Vedanti
+  // ${localWorkspaceFolder} bind-mounts that directory into the container.
+  // Files saved in either place are the same files.
+  "workspaceMount": "source=${localWorkspaceFolder},target=/workspaces/multi-agent-vedanti,type=bind,consistency=cached",
+  "workspaceFolder": "/workspaces/multi-agent-vedanti",
+  "image": "mcr.microsoft.com/devcontainers/base:ubuntu-24.04",
+  "features": {
+    "ghcr.io/devcontainers/features/git:1": {},
+    "ghcr.io/devcontainers/features/github-cli:1": {}
+  },
+  "remoteUser": "vscode",
+  "updateRemoteUserUID": true,
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "GitHub.vscode-pull-request-github"
+      ]
+    }
+  }
+}
