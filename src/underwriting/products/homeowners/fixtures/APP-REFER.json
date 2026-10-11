@@ -1,0 +1,10 @@
+{
+  "applicant_id": "APP-REFER",
+  "name": "Jordan Hale",
+  "state": "OK",
+  "year_built": 1960,
+  "roof_age": null,
+  "construction": "masonry",
+  "coverage_amount": 275000,
+  "prior_claims": []
+}

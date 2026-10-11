@@ -1,0 +1,12 @@
+{
+  "applicant_id": "APP-DENY",
+  "name": "Casey Nguyen",
+  "state": "CO",
+  "year_built": 1955,
+  "roof_age": 28,
+  "construction": "frame",
+  "coverage_amount": 400000,
+  "prior_claims": [
+    {"year": 2023, "peril": "water", "amount": 8000}
+  ]
+}
