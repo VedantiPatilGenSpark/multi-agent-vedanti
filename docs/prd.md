@@ -21,7 +21,7 @@ Do not build a UI, a CLI form, an MCP server, webhooks, queues, event-driven age
 ```text
 fixture JSON
     → intake agent        writes application
-    → enrichment agent    reads application, queries the pack territory table, writes enrichment
+    → enrichment agent    reads application, calls the pack's enrichment_lookup, writes enrichment
     → risk agent          reads application + enrichment, queries the pack credit table, writes risk
     → recommendation      reads application + enrichment + risk, writes decision
 ```
@@ -69,8 +69,8 @@ The harness loads one pack. It must not import homeowners field names. A pack pr
 | Application schema | Pydantic model of the raw fixture | Parsing fixtures and intake output |
 | Section schemas | Pydantic models for `application`, `enrichment`, `risk`, `decision` | `model_validate` on each return value |
 | Prompts | One string per agent | Sent with that step’s slice |
-| Territory lookup | `territory_lookup(state) -> Territory` | Enrichment |
-| Credit lookup | `credit_lookup(applicant_id, attempt) -> CreditFile` | Risk |
+| Enrichment lookup | `enrichment_lookup(application) -> EnrichmentReference` | Enrichment. The pack decides which fields of `application` to read and what reference data to return. The harness does not name that data. |
+| Credit lookup | `credit_lookup(applicant_id, attempt) -> CreditFile` | Risk. This name stays on the pack interface. Every product’s risk step looks up the person’s credit history. The pack supplies the rows and the timeout switch. It does not rename the tool. |
 | Rubric | Base, cap, adjustment range, line id → points | Risk prompt and the audit |
 | Band table | Ordered cutoffs | Mapping a validated score to an outcome |
 | Fixtures | JSON files keyed by `applicant_id` | Runs and tests |
@@ -125,7 +125,9 @@ Commit a SQL seed. Load it into SQLite at startup. Do not commit a requirement t
 | OK | high | low |
 | CO | high | high |
 
-Bands are `low` or `high` in this lab. `territory_lookup` returns those two bands and `status: found`. If `state` is null or not in the table, return null bands and `status: unknown`. Do not raise.
+Bands are `low` or `high` in this lab. The homeowners pack implements `enrichment_lookup(application)` by reading `state` and querying this table. There is no `territory_lookup` on the pack interface. The harness and the enrichment agent call `enrichment_lookup` only.
+
+That implementation returns the two bands and `status: found`. If `state` is null or not in the table, it returns null bands and `status: unknown`. It does not raise. A different product implements the same function against its own reference data.
 
 `credit(applicant_id, bureau_score, delinquencies)` has one row each for `APP-APPROVE`, `APP-REFER`, and `APP-RETRY`: bureau score 740, delinquencies 0. `APP-DENY` has no row. `APP-TIMEOUT` may have a row, but the timeout switch must raise before the query, so that row is never read.
 
@@ -223,7 +225,7 @@ Each function calls the model exactly once per invocation. That call is the lab'
 | Agent | Model sees | Model returns | Harness persists |
 | --- | --- | --- | --- |
 | Intake | Raw fixture and the intake prompt | Normalized application | `application` |
-| Enrichment | `application`, territory result, enrichment prompt | Enrichment note. It must not fill null application fields or invent a territory band | `enrichment`, including the lookup result |
+| Enrichment | `application`, the `enrichment_lookup` result, enrichment prompt | Enrichment note. It must not fill null application fields or invent reference facts the lookup did not return | `enrichment`, including the lookup result |
 | Risk | `application`, `enrichment`, credit result, rubric, risk prompt | Lines, adjustment, score, assessment | `risk` only after the audit passes. Also store the credit result on that section |
 | Recommendation | `application`, `enrichment`, `risk`, band already chosen, recommendation prompt | Rationale | `decision`, with code-owned `outcome` |
 
