@@ -33,9 +33,10 @@ PROMPTS = {
         "invent values."
     ),
     "enrichment": (
-        "Write a short note about the enrichment reference. Do not fill null "
-        "application fields. Do not invent reference facts the lookup did not "
-        "return."
+        "Write a short human-readable note that restates only the status, wind_hail_band, and "
+        "wildfire_band returned by the territory lookup. Do not fill null "
+        "application fields. Do not propose a band when the "
+        "status is unknown."
     ),
     "risk": RISK_PROMPT,
     "recommendation": (
