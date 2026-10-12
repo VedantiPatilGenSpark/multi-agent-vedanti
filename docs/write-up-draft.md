@@ -28,19 +28,15 @@ The model adds each line that applies and caps the total at the maximum. Points 
 
 | Line | Points |
 | --- | --- |
-| Roof age missing, or 25 years or older | 20 |
-| Roof age 15–24 | 10 |
-| Year built missing | 10 |
-| Building age 40–60, as of 2026 | 8 |
-| Building age over 60 | 15 |
+| Roof age null | 20 |
+| Roof age 0 through 25 | 10 |
+| Roof age 26 or greater | 20 |
+| Building age 0 through 40, as of 2026 | 4 |
+| Building age 41 or greater | 15 |
 | Water claim in 2021 or later | 25 |
-| Any other prior claim | 10 |
 | No credit file | 15 |
-| One or more delinquencies | 15 |
-| Bureau score below 620 | 10 |
 | Wildfire band high | 15 |
 | Wind and hail band high | 10 |
-| Territory unknown | 10 |
 
 The score cannot go above 100.
 

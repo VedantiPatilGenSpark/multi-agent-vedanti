@@ -27,9 +27,20 @@
     "note": "Found. Wind and hail band is low. Wildfire band is low."
   },
   "risk": {
-    "lines": [],
-    "score": 0,
-    "assessment": "No cited lines.",
+    "lines": [
+      {
+        "id": "roof_age_0_to_25",
+        "points": 10,
+        "evidence": "roof_age is 8"
+      },
+      {
+        "id": "building_age_0_to_40",
+        "points": 4,
+        "evidence": "year_built 2015 is 11 years old in 2026"
+      }
+    ],
+    "score": 14,
+    "assessment": "Roof age 8 and building age 11.",
     "credit": {
       "applicant_id": "APP-APPROVE",
       "file_status": "found",
@@ -39,8 +50,8 @@
   },
   "decision": {
     "outcome": "approve",
-    "score": 0,
-    "rationale": "Approve at score 0. No risk lines were cited."
+    "score": 14,
+    "rationale": "Approve at score 14. roof_age_0_to_25 is supported by roof_age 8. building_age_0_to_40 is supported by year_built 2015."
   },
   "status": "completed",
   "escalation": null

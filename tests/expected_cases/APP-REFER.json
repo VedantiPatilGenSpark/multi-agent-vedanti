@@ -29,12 +29,12 @@
   "risk": {
     "lines": [
       {
-        "id": "roof_missing_or_25_plus",
+        "id": "roof_age_null",
         "points": 20,
         "evidence": "roof_age is null"
       },
       {
-        "id": "building_age_over_60",
+        "id": "building_age_above_40",
         "points": 15,
         "evidence": "year_built 1960 is 66 years old in 2026"
       },
@@ -45,7 +45,7 @@
       }
     ],
     "score": 45,
-    "assessment": "Missing roof, building age over 60, and high wind and hail.",
+    "assessment": "Null roof, building age above 40, and high wind and hail.",
     "credit": {
       "applicant_id": "APP-REFER",
       "file_status": "found",
@@ -56,7 +56,7 @@
   "decision": {
     "outcome": "refer",
     "score": 45,
-    "rationale": "Refer at score 45. roof_missing_or_25_plus is supported by roof_age being null. building_age_over_60 is supported by year_built 1960. wind_hail_high is supported by the wind and hail band."
+    "rationale": "Refer at score 45. roof_age_null is supported by roof_age being null. building_age_above_40 is supported by year_built 1960. wind_hail_high is supported by the wind and hail band."
   },
   "status": "completed",
   "escalation": null

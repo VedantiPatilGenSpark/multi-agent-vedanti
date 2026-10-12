@@ -13,19 +13,15 @@ APPLICANT_IDS = (
 )
 
 RUBRIC_POINTS = {
-    "roof_missing_or_25_plus": 20,
-    "roof_15_to_24": 10,
-    "year_built_missing": 10,
-    "building_age_40_to_60": 8,
-    "building_age_over_60": 15,
+    "roof_age_null": 20,
+    "roof_age_0_to_25": 10,
+    "roof_age_above_25": 20,
+    "building_age_0_to_40": 4,
+    "building_age_above_40": 15,
     "water_claim_since_2021": 25,
-    "other_prior_claim": 10,
     "no_credit_file": 15,
-    "delinquencies": 15,
-    "bureau_score_below_620": 10,
     "wildfire_high": 15,
     "wind_hail_high": 10,
-    "territory_unknown": 10,
 }
 
 

@@ -33,12 +33,12 @@
   "risk": {
     "lines": [
       {
-        "id": "roof_missing_or_25_plus",
+        "id": "roof_age_above_25",
         "points": 20,
         "evidence": "roof_age is 28"
       },
       {
-        "id": "building_age_over_60",
+        "id": "building_age_above_40",
         "points": 15,
         "evidence": "year_built 1955 is 71 years old in 2026"
       },
@@ -75,7 +75,7 @@
   "decision": {
     "outcome": "deny",
     "score": 100,
-    "rationale": "Deny at score 100. roof_missing_or_25_plus is supported by roof_age 28. building_age_over_60 is supported by year_built 1955. water_claim_since_2021 is supported by the 2023 water claim. no_credit_file is supported by file_status no_file. wildfire_high and wind_hail_high are supported by the Colorado bands."
+    "rationale": "Deny at score 100. roof_age_above_25 is supported by roof_age 28. building_age_above_40 is supported by year_built 1955. water_claim_since_2021 is supported by the 2023 water claim. no_credit_file is supported by file_status no_file. wildfire_high and wind_hail_high are supported by the Colorado bands."
   },
   "status": "completed",
   "escalation": null

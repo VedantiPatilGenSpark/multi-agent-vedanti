@@ -160,23 +160,19 @@ The risk prompt contains this table and the instruction that building age as of 
 
 | Id | Points | Model applies it when |
 | --- | --- | --- |
-| `roof_missing_or_25_plus` | 20 | `roof_age` is null, or `roof_age >= 25` |
-| `roof_15_to_24` | 10 | `roof_age` is 15 through 24 |
-| `year_built_missing` | 10 | `year_built` is null |
-| `building_age_40_to_60` | 8 | age is 40 through 60 |
-| `building_age_over_60` | 15 | age is greater than 60 |
+| `roof_age_null` | 20 | `roof_age` is null |
+| `roof_age_0_to_25` | 10 | `roof_age` is 0 through 25 |
+| `roof_age_above_25` | 20 | `roof_age` is 26 or greater |
+| `building_age_0_to_40` | 4 | age is 0 through 40 |
+| `building_age_above_40` | 15 | age is 41 or greater |
 | `water_claim_since_2021` | 25 | a claim has `peril == "water"` and `year >= 2021` |
-| `other_prior_claim` | 10 | any other claim |
 | `no_credit_file` | 15 | `file_status == "no_file"` |
-| `delinquencies` | 15 | `delinquencies >= 1` |
-| `bureau_score_below_620` | 10 | bureau score is present and `< 620` |
 | `wildfire_high` | 15 | wildfire band is `high` |
 | `wind_hail_high` | 10 | wind-and-hail band is `high` |
-| `territory_unknown` | 10 | territory status is `unknown` |
 
 Pack constants: `cap = 100`.
 
-The prompt tells the model to cite at most one roof line, at most one building-age line, and not to cite `no_credit_file` together with `delinquencies` or `bureau_score_below_620`. Code does not enforce those exclusions.
+The prompt tells the model to cite at most one roof line and at most one building-age line. Code does not enforce those exclusions.
 
 The model returns:
 
@@ -202,10 +198,10 @@ Build the files so the rubric total sits inside the intended band. Claims use th
 
 | Id | Intended result | Facts that set the total | Total |
 | --- | --- | --- | --- |
-| `APP-APPROVE` | completed approve | WI, `year_built` 2015, `roof_age` 8, no claims, credit row 740 / 0 delinquencies | 0 |
+| `APP-APPROVE` | completed approve | WI, `year_built` 2015, `roof_age` 8, no claims, credit row 740 / 0 delinquencies | 14 |
 | `APP-REFER` | completed refer | OK, `year_built` 1960, `roof_age` null, no claims, credit row 740 / 0 | 45 |
 | `APP-DENY` | completed deny | CO, `year_built` 1955, `roof_age` 28, one water claim in 2023 for 8000, no credit row | 100, and 75 even if the water line is omitted |
-| `APP-RETRY` | timeout once, then completed approve | Same facts as `APP-APPROVE`, its own credit row | 0 |
+| `APP-RETRY` | timeout once, then completed approve | Same facts as `APP-APPROVE`, its own credit row | 14 |
 | `APP-TIMEOUT` | escalated | Any valid homeowners facts | Score is never produced |
 
 `name`, `construction`, and `coverage_amount` must be present and non-null on every fixture. Use distinct names. Coverage and construction do not add rubric points.
