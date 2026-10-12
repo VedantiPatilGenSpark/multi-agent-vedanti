@@ -139,6 +139,15 @@ pytest
 
 `pytest` uses the fake model. It does not need Ollama, an API key, or the network. It runs the five sample applications below, plus checks for each step, the score arithmetic, and the trace. GitHub Actions runs the same tests.
 
+With Docker, and without a local Python install, from the unzipped repo:
+
+```bash
+docker build -t underwriting .
+docker run --rm underwriting
+```
+
+That image runs the same test suite. It does not include Ollama or the model.
+
 To run against a real local model, start Ollama, then:
 
 ```bash
@@ -146,6 +155,20 @@ python scripts/run_traces.py
 ```
 
 `OLLAMA_HOST` is the Ollama address. The default is `http://host.docker.internal:11434`, which lets a dev container reach Ollama on the host machine. When Ollama is on the same machine as the script, set `OLLAMA_HOST=http://127.0.0.1:11434`.
+
+The same live run from the image needs Ollama already running on the host with `qwen3:8b` pulled. The `cases/` and `traces/` mounts write those JSON files on the host:
+
+```bash
+docker run --rm \
+  -e OLLAMA_HOST=http://host.docker.internal:11434 \
+  --add-host=host.docker.internal:host-gateway \
+  -v "$PWD/cases:/app/cases" \
+  -v "$PWD/traces:/app/traces" \
+  underwriting \
+  python scripts/run_traces.py
+```
+
+`--add-host=host.docker.internal:host-gateway` makes that hostname resolve on Linux. Docker Desktop on Mac and Windows already provides it.
 
 The script runs every sample, prints token counts, a simulated cost, and latency, and writes:
 
