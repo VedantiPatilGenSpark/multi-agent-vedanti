@@ -22,19 +22,37 @@ class ModelAdapter(Protocol):
 
 
 class FakeAdapter:
-    """Returns one canned reply. Does not open a network connection."""
+    """Returns canned replies. Does not open a network connection."""
 
-    def __init__(self, text: str, input_tokens: int, output_tokens: int) -> None:
-        self._response = ModelResponse(
-            text=text,
-            input_tokens=input_tokens,
-            output_tokens=output_tokens,
-        )
+    def __init__(
+        self,
+        text: str | None = None,
+        input_tokens: int = 0,
+        output_tokens: int = 0,
+        replies: list[tuple[str, int, int]] | None = None,
+    ) -> None:
         self.calls: list[tuple[str, dict]] = []
+        if replies is None:
+            self._replies = None
+            self._response = ModelResponse(
+                text=text or "",
+                input_tokens=input_tokens,
+                output_tokens=output_tokens,
+            )
+        else:
+            self._replies = list(replies)
+            self._response = None
 
     def complete(self, prompt: str, json_schema: dict) -> ModelResponse:
         self.calls.append((prompt, json_schema))
-        return self._response
+        if self._replies is None:
+            return self._response
+        reply_text, reply_input_tokens, reply_output_tokens = self._replies.pop(0)
+        return ModelResponse(
+            text=reply_text,
+            input_tokens=reply_input_tokens,
+            output_tokens=reply_output_tokens,
+        )
 
 
 class OllamaAdapter:
