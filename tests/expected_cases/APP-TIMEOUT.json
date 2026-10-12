@@ -1,0 +1,37 @@
+{
+  "raw_application": {
+    "applicant_id": "APP-TIMEOUT",
+    "name": "Quinn Adler",
+    "state": "WI",
+    "year_built": 2010,
+    "roof_age": 5,
+    "construction": "frame",
+    "coverage_amount": 300000,
+    "prior_claims": []
+  },
+  "application": {
+    "applicant_id": "APP-TIMEOUT",
+    "name": "Quinn Adler",
+    "state": "WI",
+    "year_built": 2010,
+    "roof_age": 5,
+    "construction": "frame",
+    "coverage_amount": 300000,
+    "prior_claims": [],
+    "missing": []
+  },
+  "enrichment": {
+    "status": "found",
+    "wind_hail_band": "low",
+    "wildfire_band": "low",
+    "note": "Found. Wind and hail band is low. Wildfire band is low."
+  },
+  "risk": null,
+  "decision": null,
+  "status": "escalated",
+  "escalation": {
+    "reason": "credit lookup timed out after 2 attempts",
+    "source": "credit_timeout",
+    "attempts": 2
+  }
+}

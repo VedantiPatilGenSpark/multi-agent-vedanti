@@ -1,0 +1,65 @@
+{
+  "raw_application": {
+    "applicant_id": "APP-REFER",
+    "name": "Jordan Hale",
+    "state": "OK",
+    "year_built": 1960,
+    "roof_age": null,
+    "construction": "masonry",
+    "coverage_amount": 275000,
+    "prior_claims": []
+  },
+  "application": {
+    "applicant_id": "APP-REFER",
+    "name": "Jordan Hale",
+    "state": "OK",
+    "year_built": 1960,
+    "roof_age": null,
+    "construction": "masonry",
+    "coverage_amount": 275000,
+    "prior_claims": [],
+    "missing": ["roof_age"]
+  },
+  "enrichment": {
+    "status": "found",
+    "wind_hail_band": "high",
+    "wildfire_band": "low",
+    "note": "Found. Wind and hail band is high. Wildfire band is low."
+  },
+  "risk": {
+    "lines": [
+      {
+        "id": "roof_missing_or_25_plus",
+        "points": 20,
+        "evidence": "roof_age is null"
+      },
+      {
+        "id": "building_age_over_60",
+        "points": 15,
+        "evidence": "year_built 1960 is 66 years old in 2026"
+      },
+      {
+        "id": "wind_hail_high",
+        "points": 10,
+        "evidence": "wind_hail_band is high"
+      }
+    ],
+    "combination_adjustment": 0,
+    "combination_reason": "",
+    "score": 55,
+    "assessment": "Base 10 plus missing roof, building age over 60, and high wind and hail.",
+    "credit": {
+      "applicant_id": "APP-REFER",
+      "file_status": "found",
+      "bureau_score": 740,
+      "delinquencies": 0
+    }
+  },
+  "decision": {
+    "outcome": "refer",
+    "score": 55,
+    "rationale": "Refer at score 55. roof_missing_or_25_plus is supported by roof_age being null. building_age_over_60 is supported by year_built 1960. wind_hail_high is supported by the wind and hail band."
+  },
+  "status": "completed",
+  "escalation": null
+}

@@ -1,0 +1,84 @@
+{
+  "raw_application": {
+    "applicant_id": "APP-DENY",
+    "name": "Casey Nguyen",
+    "state": "CO",
+    "year_built": 1955,
+    "roof_age": 28,
+    "construction": "frame",
+    "coverage_amount": 400000,
+    "prior_claims": [
+      {"year": 2023, "peril": "water", "amount": 8000}
+    ]
+  },
+  "application": {
+    "applicant_id": "APP-DENY",
+    "name": "Casey Nguyen",
+    "state": "CO",
+    "year_built": 1955,
+    "roof_age": 28,
+    "construction": "frame",
+    "coverage_amount": 400000,
+    "prior_claims": [
+      {"year": 2023, "peril": "water", "amount": 8000}
+    ],
+    "missing": []
+  },
+  "enrichment": {
+    "status": "found",
+    "wind_hail_band": "high",
+    "wildfire_band": "high",
+    "note": "Found. Wind and hail band is high. Wildfire band is high."
+  },
+  "risk": {
+    "lines": [
+      {
+        "id": "roof_missing_or_25_plus",
+        "points": 20,
+        "evidence": "roof_age is 28"
+      },
+      {
+        "id": "building_age_over_60",
+        "points": 15,
+        "evidence": "year_built 1955 is 71 years old in 2026"
+      },
+      {
+        "id": "water_claim_since_2021",
+        "points": 25,
+        "evidence": "water claim in 2023 for 8000"
+      },
+      {
+        "id": "no_credit_file",
+        "points": 15,
+        "evidence": "file_status is no_file"
+      },
+      {
+        "id": "wildfire_high",
+        "points": 15,
+        "evidence": "wildfire_band is high"
+      },
+      {
+        "id": "wind_hail_high",
+        "points": 10,
+        "evidence": "wind_hail_band is high"
+      }
+    ],
+    "combination_adjustment": 0,
+    "combination_reason": "",
+    "score": 100,
+    "assessment": "Base 10 plus the cited lines, capped at 100.",
+    "credit": {
+      "applicant_id": "APP-DENY",
+      "file_status": "no_file",
+      "bureau_score": null,
+      "delinquencies": null
+    }
+  },
+  "decision": {
+    "outcome": "deny",
+    "score": 100,
+    "rationale": "Deny at score 100. roof_missing_or_25_plus is supported by roof_age 28. building_age_over_60 is supported by year_built 1955. water_claim_since_2021 is supported by the 2023 water claim. no_credit_file is supported by file_status no_file. wildfire_high and wind_hail_high are supported by the Colorado bands."
+  },
+  "status": "completed",
+  "escalation": null
+}

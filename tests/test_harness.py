@@ -1,4 +1,5 @@
 import json
+from pathlib import Path
 
 import pytest
 from pydantic import ValidationError
@@ -6,6 +7,8 @@ from pydantic import ValidationError
 from underwriting.harness import PipelineStepError, run_case
 from underwriting.model import FakeAdapter
 from underwriting.products.homeowners import HomeownersPack
+
+_EXPECTED_CASES = Path(__file__).parent / "expected_cases"
 
 _TRACE_FIELDS = (
     "agent",
@@ -172,6 +175,30 @@ def test_unusable_risk_score_escalates_without_a_second_model_call():
         "credit_lookup",
         "risk",
     ]
+
+
+@pytest.mark.parametrize(
+    "applicant_id",
+    ["APP-APPROVE", "APP-REFER", "APP-DENY", "APP-RETRY", "APP-TIMEOUT"],
+)
+def test_case_matches_expected_body(applicant_id):
+    expected = json.loads((_EXPECTED_CASES / f"{applicant_id}.json").read_text())
+    if expected["risk"] is None:
+        payloads = [expected["application"], {"note": expected["enrichment"]["note"]}]
+    else:
+        risk_reply = {key: value for key, value in expected["risk"].items() if key != "credit"}
+        payloads = [
+            expected["application"],
+            {"note": expected["enrichment"]["note"]},
+            risk_reply,
+            {
+                "rationale": expected["decision"]["rationale"],
+                "outcome": "deny",
+                "score": 99,
+            },
+        ]
+    case, _trace = run_case(applicant_id, _adapter(*payloads), sleeper=lambda seconds: None)
+    assert case == expected
 
 
 def test_intake_schema_mismatch_is_traced_and_raised():
