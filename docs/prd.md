@@ -2,7 +2,7 @@
 
 Status: locked for implementation.  
 Audience: an implementing agent.  
-If this file and `docs/write-up-draft.md` disagree, this file wins. The draft is notes for a later README, not the build spec.
+The public overview is `README.md`. This file is the build spec. `docs/write-up-draft.md` keeps the homeowners rubric, timeout behavior, and cost notes behind that README. If this file and the write-up disagree, this file wins.
 
 ## 1. Purpose
 
@@ -32,7 +32,7 @@ The harness is the only writer. Each agent still reads from the store and writes
 
 Agents treat arguments as read-only. Do not deep-copy for defense. Do not mutate inputs.
 
-The live script prints the case and writes JSON at the end of the run. The trace is a separate object.
+The live script prints measured tokens, simulated cost, and latency for the case and for each step. It then compares the stable case fields with `tests/expected_cases/{applicant_id}.json`. It writes the case and the trace as JSON at the end of the run. The trace is a separate object.
 
 ### 3.1 Case record
 
@@ -55,14 +55,14 @@ The live script prints the case and writes JSON at the end of the run. The trace
 3. Call intake. On success, set `application`.
 4. Call enrichment. On success, set `enrichment`.
 5. Call the risk step in a retry loop (section 7). On a passing result, set `risk`.
-6. If `risk` was written, call recommendation. Code sets `outcome` from the pack band table after the model returns. Set `status` to `completed`.
+6. If `risk` was written, call recommendation. Code chooses `outcome` from the pack band table before the model writes the rationale, and copies the validated score onto the decision. Set `status` to `completed`.
 7. If the risk step escalates, do not call recommendation. Set `status` to `escalated`.
 8. Append a trace entry for every model call and every credit attempt.
 9. Return the case and the trace.
 
 ## 4. Product pack contract
 
-The harness loads one pack. It must not import homeowners field names. A pack provides:
+`run_case` constructs `HomeownersPack` and runs it. The harness must not import homeowners field names. `load_pack` checks that a registered pack fills the slots below. A second product is another pack. The four-step sequence stays the same, and `run_case` is pointed at that pack. A pack provides:
 
 | Slot | Pack provides | Harness uses it for |
 | --- | --- | --- |
@@ -190,7 +190,7 @@ The model returns:
 | 30 through 59 | `refer` |
 | 60 and above | `deny` |
 
-Code sets `outcome` and copies `score` onto the decision after the recommendation model returns. If the model also returned an outcome, replace it. The model’s job is the rationale.
+Code chooses `outcome` from this table before the recommendation model is called, and copies `score` onto the decision. The model writes the rationale. The response schema asks only for that rationale.
 
 ### 5.6 Fixtures
 
@@ -212,14 +212,14 @@ Build the files so the rubric total sits inside the intended band. Claims use th
 
 `intake_agent`, `enrichment_agent`, `risk_scoring_agent`, and `recommendation_agent` are standalone functions in `src/underwriting/agents.py`. They are separate from the harness. They are not closures over the case dict. Each takes the slice for its step and the model adapter. Unit tests call the function with a hardcoded input. They do not start the pipeline.
 
-Each function calls the model exactly once per invocation. That call is the lab's reasoning step. `risk_scoring_agent` calls the model only after `credit_lookup` returns. The recommendation function still calls the model for the rationale. After that call returns, code sets `outcome` from the pack band table. The model's outcome, if it returned one, is replaced. The function's return value is the decision the harness stores.
+Each function calls the model exactly once per invocation. That call is the lab's reasoning step. `risk_scoring_agent` calls the model only after `credit_lookup` returns. The recommendation function still calls the model for the rationale. Code chooses `outcome` from the pack band table before that call and copies the validated score onto the decision. The function's return value is the decision the harness stores.
 
 | Agent | Model sees | Model returns | Harness persists |
 | --- | --- | --- | --- |
 | Intake | Raw fixture and the intake prompt | Normalized application | `application` |
-| Enrichment | `application`, the `enrichment_lookup` result, enrichment prompt | Enrichment note. It must not fill null application fields or invent reference facts the lookup did not return | `enrichment`, including the lookup result |
-| Risk | `application`, `enrichment`, credit result, rubric, risk prompt | Lines, score, assessment | `risk` only after the audit passes. Also store the credit result on that section |
-| Recommendation | `application`, `enrichment`, `risk`, band already chosen, recommendation prompt | Rationale | `decision`, with code-owned `outcome` |
+| Enrichment | `application`, the `enrichment_lookup` result, enrichment prompt | The note only. The response schema omits the lookup fields. Code copies those fields from the lookup. The note must not fill null application fields or invent reference facts | `enrichment`, including the lookup result |
+| Risk | `application`, `enrichment`, credit result, rubric, risk prompt | Lines, score, assessment. The response schema omits `credit`. Code attaches the lookup result after the audit | `risk` only after the audit passes |
+| Recommendation | `application`, `enrichment`, `risk`, the outcome already chosen, recommendation prompt | The rationale only. The response schema omits `outcome` and `score` | `decision`, with code-owned `outcome` and `score` |
 
 Empty sections are not sent. Enrichment does not see the raw fixture or a null `risk`. Risk does not see `decision`.
 
@@ -273,7 +273,7 @@ Intake and enrichment sections already written stay on the case.
 
 Every live agent uses `qwen3:8b`. Do not route some agents to `mistral:7b`.
 
-Parse with `model_validate_json`. A schema mismatch is an unusable risk reply when it happens on the risk step. On intake, enrichment, or recommendation, a schema mismatch fails that step’s test and, in the live script, raises a clear error after tracing the attempt. Do not silently continue with a partial section. Recommendation and intake schema failures are not the lab’s required escalation demo. Only the risk audit and the credit timeout use the escalation record.
+Intake parses the model text with `model_validate_json`. Enrichment, risk, and recommendation parse the model text as JSON, keep the fields the model owns, and validate the merged section. A Pydantic validation failure on the risk step is an unusable risk reply: escalate, and do not retry the model. On intake, enrichment, or recommendation, a Pydantic validation failure raises `PipelineStepError` after tracing the attempt. Do not continue with a partial section. Those schema failures are not the lab’s required escalation demo. Only the risk audit, a risk-step validation failure, and the credit timeout use the escalation record.
 
 ## 9. Trace, cost, and latency
 
@@ -296,9 +296,9 @@ Simulated dollars, labeled simulated on every figure:
 cost = (input_tokens / 1_000_000) * 0.10 + (output_tokens / 1_000_000) * 0.40
 ```
 
-Do not hardcode a token budget or a real-time-versus-batch verdict. The dry run in section 13 sets the per-step expected totals. Record those numbers in the write-up after that run, then run the official traces.
+Do not hardcode a token budget or a real-time-versus-batch verdict. The dry run in section 12 records the per-step token totals. Record those numbers in the write-up after that run, then run the official traces.
 
-The implementation prints measured input tokens, measured output tokens, simulated cost, and latency per case and per step. Simulated cost is the lab's cost calculation for this setup. Local Ollama sends no invoice, so dollars are the measured token counts times the rates above. Every figure is labeled simulated. Latency is the measured sum of `duration_ms`, including a failed credit attempt and the 0.2s backoff on that path.
+The implementation prints measured input tokens, measured output tokens, simulated cost, and latency per case and per step. Simulated cost is the lab's cost calculation for this setup. Local Ollama sends no invoice, so dollars are the measured token counts times the rates above. Every figure is labeled simulated. Latency is the sum of each trace entry’s `duration_ms`, including a failed credit attempt. The 0.2s backoff is a sleep between attempts. It is not a trace entry.
 
 The write-up then uses the three completed official traces (`APP-APPROVE`, `APP-REFER`, `APP-DENY`). For each case it states the simulated cost and the total latency, and it concludes whether those measurements are acceptable for a real-time use case or for an overnight batch use case, with the reasoning taken from the traces. Do not put that verdict in code.
 
@@ -311,7 +311,7 @@ Gitignore both directories.
 
 ## 10. Tests and CI
 
-Python and pytest. GitHub Actions runs pytest only. CI must pass with `FakeAdapter` and a fake credit lookup. CI must not require Ollama, a key, or the network.
+Python and pytest. GitHub Actions runs pytest only. CI uses `FakeAdapter` for model calls. Credit lookups use the homeowners pack’s in-memory SQLite tables, including the timeout switch. CI must not require Ollama, a key, or the network.
 
 Agent tests call that agent function with a hardcoded input. They do not call the harness. Pipeline tests call the harness. Pipeline tests also assert that the trace has one entry per model call and per credit attempt, and that each entry includes `agent`, `input`, `output`, `duration_ms`, `input_tokens`, and `output_tokens`.
 
@@ -334,15 +334,18 @@ The live script is not part of CI. It is the source of the three success traces 
 ```text
 src/underwriting/harness.py
 src/underwriting/agents.py
+src/underwriting/audit.py
 src/underwriting/trace.py
 src/underwriting/model.py
+src/underwriting/products/contract.py
 src/underwriting/products/homeowners/   pack, schemas, prompts, seed.sql, fixtures
 tests/
 scripts/run_traces.py
 .github/workflows/ci.yml
+README.md
 ```
 
-The dev container already exists. Do not replace it. Document `OLLAMA_HOST` in the script’s help text.
+The dev container already exists. Do not replace it. `OLLAMA_HOST` is documented in the script docstring and in `README.md`.
 
 ## 12. Dry run after implementation
 
