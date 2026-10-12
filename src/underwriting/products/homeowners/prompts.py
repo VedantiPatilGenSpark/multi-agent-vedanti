@@ -6,6 +6,7 @@ Score this homeowners application. Building age as of 2026 is 2026 - year_built 
 base = 10
 cap = 100
 The combination adjustment is an integer from -10 through +10.
+Use a non-zero adjustment only when two cited lines compound or overlap, and name those two ids in combination_reason; otherwise use 0 and an empty reason.
 
 | Id | Points | Apply when |
 | --- | --- | --- |
