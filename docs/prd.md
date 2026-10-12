@@ -176,7 +176,7 @@ The risk prompt contains this table and the instruction that building age as of 
 
 Pack constants: `base = 10`, `cap = 100`.
 
-The prompt tells the model that roof lines are mutually exclusive, building-age lines are mutually exclusive, and `no_credit_file` is not combined with bureau or delinquency lines. Code does not enforce those exclusions.
+The prompt tells the model to cite at most one roof line, at most one building-age line, and not to cite `no_credit_file` together with `delinquencies` or `bureau_score_below_620`. Code does not enforce those exclusions.
 
 The model returns:
 

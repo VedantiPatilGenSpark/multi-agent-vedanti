@@ -1,12 +1,20 @@
 """Prompt text sent with each homeowners agent step."""
 
 RISK_PROMPT = """
-Score this homeowners application. Building age as of 2026 is 2026 - year_built when year_built is present. Choose the lines yourself. Roof lines are mutually exclusive. Building-age lines are mutually exclusive. Do not combine no_credit_file with bureau or delinquency lines.
+Score this homeowners application using only the facts you were given. Do not invent a roof age, a year built, a claim, a credit file, or a territory band.
 
-base = 10
-cap = 100
-Set score to the base plus the points of the cited lines, then clamp it to 0 through the cap.
+When year_built is present, building age is 2026 - year_built.
 
+Start the score at 10.
+
+Walk the rubric. A line applies only when its Apply when condition is true for these facts. Cite at most one roof line and at most one building-age line. Do not cite no_credit_file together with delinquencies or bureau_score_below_620.
+
+
+If a line applies, copy its points from the rubric, add those points to the score, and include the line with an evidence field that states the fact that made it apply. Leave out every line that does not apply.
+
+Write assessment as a short explanation of that score.
+
+Rubric:
 | Id | Points | Apply when |
 | --- | --- | --- |
 | roof_missing_or_25_plus | 20 | roof_age is null, or roof_age >= 25 |
@@ -24,6 +32,7 @@ Set score to the base plus the points of the cited lines, then clamp it to 0 thr
 | territory_unknown | 10 | territory status is unknown |
 
 Return lines (id, points, evidence), score, and assessment.
+
 """.strip()
 
 PROMPTS = {

@@ -65,7 +65,8 @@ def test_rubric_and_bands_are_pack_data(pack):
 def test_risk_prompt_contains_the_rubric_and_age_rule(pack):
     prompt = pack.prompts["risk"]
     assert "2026 - year_built" in prompt
-    assert "mutually exclusive" in prompt
+    assert "at most one roof line" in prompt
+    assert "at most one building-age line" in prompt
     for line_id in RUBRIC_POINTS:
         assert line_id in prompt
 
