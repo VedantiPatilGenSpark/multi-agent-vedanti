@@ -32,7 +32,6 @@ class HomeownersPack:
     decision_schema = Decision
     prompts = PROMPTS
     rubric = Rubric(
-        base=10,
         cap=100,
         points_by_id={
             "roof_missing_or_25_plus": 20,
@@ -52,8 +51,8 @@ class HomeownersPack:
     )
     bands = (
         Band(minimum=0, outcome="approve"),
-        Band(minimum=40, outcome="refer"),
-        Band(minimum=70, outcome="deny"),
+        Band(minimum=30, outcome="refer"),
+        Band(minimum=60, outcome="deny"),
     )
 
     def __init__(self) -> None:

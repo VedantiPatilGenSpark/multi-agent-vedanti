@@ -52,13 +52,12 @@ def test_homeowners_pack_satisfies_the_contract(pack):
 
 
 def test_rubric_and_bands_are_pack_data(pack):
-    assert pack.rubric.base == 10
     assert pack.rubric.cap == 100
     assert pack.rubric.points_by_id == RUBRIC_POINTS
     assert sorted((band.minimum, band.outcome) for band in pack.bands) == [
         (0, "approve"),
-        (40, "refer"),
-        (70, "deny"),
+        (30, "refer"),
+        (60, "deny"),
     ]
 
 

@@ -23,7 +23,7 @@ def audit_risk_reply(reply: dict, rubric: Rubric) -> None:
         if line["points"] != rubric.points_by_id[line_id]:
             raise RiskAuditError(f"points do not match the rubric for {line_id}")
 
-    total = rubric.base + sum(line["points"] for line in lines)
-    expected = min(rubric.cap, max(0, total))
+    total = sum(line["points"] for line in lines)
+    expected = min(rubric.cap, total)
     if score != expected:
         raise RiskAuditError("score does not match the clamped total")

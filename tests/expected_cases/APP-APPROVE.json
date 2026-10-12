@@ -28,8 +28,8 @@
   },
   "risk": {
     "lines": [],
-    "score": 10,
-    "assessment": "Base score only.",
+    "score": 0,
+    "assessment": "No cited lines.",
     "credit": {
       "applicant_id": "APP-APPROVE",
       "file_status": "found",
@@ -39,8 +39,8 @@
   },
   "decision": {
     "outcome": "approve",
-    "score": 10,
-    "rationale": "Approve at score 10. No risk lines were cited."
+    "score": 0,
+    "rationale": "Approve at score 0. No risk lines were cited."
   },
   "status": "completed",
   "escalation": null

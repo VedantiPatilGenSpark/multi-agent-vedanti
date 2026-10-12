@@ -19,16 +19,15 @@ This is the example of a product line pack. Each piece plugs into a fixed slot i
 | Prompts | One prompt fragment per agent, written for homeowners | Each agent call receives that fragment plus the case slice for its step. |
 | Territory table | SQLite rows keyed by state, with a wind-and-hail band and a wildfire band | Enrichment calls a lookup with the state from `application`. An unknown or missing state returns null bands. |
 | Credit table | SQLite rows keyed by `applicant_id`, with a bureau score and a delinquency count. The deny fixture has no row. | The risk step calls `credit_lookup`. A missing row is `no_file`, which is a normal result. |
-| Risk rubric | The point table below, including the base and the cap | The risk model applies this table and returns the lines, a score, and an assessment. Generic code checks internal consistency only: cited line ids exist, points match those lines, and the score equals the base plus those points, clamped to the cap. A reply that omits a true line still passes. Code does not rescore. If the check fails, the harness does not retry the model and does not write `risk`. It escalates with the reason that the risk score was unusable. |
-| Band table | Approve below 40, refer from 40 through 69, deny at 70 and above | After a validated score is written, recommendation maps it through this table. The model writes the rationale and cannot change the band. |
+| Risk rubric | The point table below, including the cap | The risk model applies this table and returns the lines, a score, and an assessment. Generic code checks internal consistency only: cited line ids exist, points match those lines, and the score equals the sum of those points, capped at the maximum. A reply that omits a true line still passes. Code does not rescore. If the check fails, the harness does not retry the model and does not write `risk`. It escalates with the reason that the risk score was unusable. |
+| Band table | Approve below 30, refer from 30 through 59, deny at 60 and above | After a validated score is written, recommendation maps it through this table. The model writes the rationale and cannot change the band. |
 
 ### Homeowners risk rubric
 
-The model starts at the base, adds each line that applies, and caps the total at the maximum. Points below are the homeowners pack’s values, not pipeline constants.
+The model adds each line that applies and caps the total at the maximum. Points below are the homeowners pack’s values, not pipeline constants.
 
 | Line | Points |
 | --- | --- |
-| Base | 10 |
 | Roof age missing, or 25 years or older | 20 |
 | Roof age 15–24 | 10 |
 | Year built missing | 10 |

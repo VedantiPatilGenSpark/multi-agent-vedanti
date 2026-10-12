@@ -5,12 +5,11 @@ Score this homeowners application using only the facts you were given. Do not in
 
 When year_built is present, building age is 2026 - year_built.
 
-Start the score at 10.
-
 Walk the rubric. A line applies only when its Apply when condition is true for these facts. Cite at most one roof line and at most one building-age line. Do not cite no_credit_file together with delinquencies or bureau_score_below_620.
 
+If a line applies, copy its points from the rubric and include the line with an evidence field that states the fact that made it apply. Leave out every line that does not apply.
 
-If a line applies, copy its points from the rubric, add those points to the score, and include the line with an evidence field that states the fact that made it apply. Leave out every line that does not apply.
+Set the score to the sum of the cited lines' points. If that sum is over 100, the score is 100.
 
 Write assessment as a short explanation of that score.
 

@@ -64,7 +64,7 @@
       }
     ],
     "score": 100,
-    "assessment": "Base 10 plus the cited lines, capped at 100.",
+    "assessment": "Cited lines sum to 100.",
     "credit": {
       "applicant_id": "APP-DENY",
       "file_status": "no_file",

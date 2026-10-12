@@ -55,8 +55,8 @@ def _valid_risk_reply() -> str:
     return json.dumps(
         {
             "lines": [],
-            "score": 10,
-            "assessment": "base only",
+            "score": 0,
+            "assessment": "no cited lines",
             "credit": {
                 "applicant_id": "APP-APPROVE",
                 "file_status": "no_file",
@@ -123,8 +123,8 @@ def test_risk_returns_a_valid_reply_unchanged_and_attaches_the_credit_file():
     adapter = FakeAdapter(text=_valid_risk_reply(), input_tokens=4, output_tokens=5)
     risk = risk_scoring_agent(application, _enrichment(), adapter, pack, attempt=1)
     assert risk.lines == []
-    assert risk.score == 10
-    assert risk.assessment == "base only"
+    assert risk.score == 0
+    assert risk.assessment == "no cited lines"
     assert risk.credit == CreditFile(
         applicant_id="APP-APPROVE",
         file_status="found",

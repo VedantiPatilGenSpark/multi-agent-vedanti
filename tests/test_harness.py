@@ -40,8 +40,8 @@ def _success_payloads(applicant_id: str) -> list[dict]:
         {"note": "Territory note."},
         {
             "lines": [],
-            "score": 10,
-            "assessment": "base only",
+            "score": 0,
+            "assessment": "no cited lines",
         },
         {"rationale": "Approve this case.", "outcome": "deny", "score": 99},
     ]
@@ -82,7 +82,7 @@ def test_app_approve_completes_with_approve():
     assert case["status"] == "completed"
     assert case["escalation"] is None
     assert case["decision"]["outcome"] == "approve"
-    assert case["decision"]["score"] == 10
+    assert case["decision"]["score"] == 0
     assert case["raw_application"]["roof_age"] == 8
     assert [entry.step for entry in trace.entries] == [
         "intake",

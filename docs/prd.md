@@ -71,7 +71,7 @@ The harness loads one pack. It must not import homeowners field names. A pack pr
 | Prompts | One string per agent | Sent with that step’s slice |
 | Enrichment lookup | `enrichment_lookup(application) -> EnrichmentReference` | Enrichment. The pack decides which fields of `application` to read and what reference data to return. The harness does not name that data. |
 | Credit lookup | `credit_lookup(applicant_id, attempt) -> CreditFile` | Risk. This name stays on the pack interface. Every product’s risk step looks up the person’s credit history. The pack supplies the rows and the timeout switch. It does not rename the tool. |
-| Rubric | Base, cap, line id → points | Risk prompt and the audit |
+| Rubric | Cap, line id → points | Risk prompt and the audit |
 | Band table | Ordered cutoffs | Mapping a validated score to an outcome |
 | Fixtures | JSON files keyed by `applicant_id` | Runs and tests |
 
@@ -81,14 +81,14 @@ Lookup and rubric failures that are business results (`no_file`, unknown territo
 
 Run this only on a model reply, never instead of one. Do not compute a homeowners score in Python.
 
-Let `cited` be the returned lines, `score` the returned integer, and `base`, `cap`, and `points_by_id` come from the pack.
+Let `cited` be the returned lines, `score` the returned integer, and `cap` and `points_by_id` come from the pack.
 
 The reply passes only if all of the following are true:
 
 - Every cited line id is in `points_by_id`.
 - Every cited line’s `points` equal `points_by_id[id]`.
 - No duplicate line ids.
-- `score == clamp(base + sum(cited points), 0, cap)`.
+- `score == min(sum(cited points), cap)`.
 
 Evidence strings are stored and traced. Code does not check them against the case. A reply that omits a line the facts would support still passes. Code does not add the missing line and does not rescore.
 
@@ -174,7 +174,7 @@ The risk prompt contains this table and the instruction that building age as of 
 | `wind_hail_high` | 10 | wind-and-hail band is `high` |
 | `territory_unknown` | 10 | territory status is `unknown` |
 
-Pack constants: `base = 10`, `cap = 100`.
+Pack constants: `cap = 100`.
 
 The prompt tells the model to cite at most one roof line, at most one building-age line, and not to cite `no_credit_file` together with `delinquencies` or `bureau_score_below_620`. Code does not enforce those exclusions.
 
@@ -190,9 +190,9 @@ The model returns:
 
 | Validated score | `decision.outcome` |
 | --- | --- |
-| below 40 | `approve` |
-| 40 through 69 | `refer` |
-| 70 and above | `deny` |
+| below 30 | `approve` |
+| 30 through 59 | `refer` |
+| 60 and above | `deny` |
 
 Code sets `outcome` and copies `score` onto the decision after the recommendation model returns. If the model also returned an outcome, replace it. The model’s job is the rationale.
 
@@ -202,15 +202,15 @@ Build the files so the rubric total sits inside the intended band. Claims use th
 
 | Id | Intended result | Facts that set the total | Total |
 | --- | --- | --- | --- |
-| `APP-APPROVE` | completed approve | WI, `year_built` 2015, `roof_age` 8, no claims, credit row 740 / 0 delinquencies | 10 |
-| `APP-REFER` | completed refer | OK, `year_built` 1960, `roof_age` null, no claims, credit row 740 / 0 | 55 |
-| `APP-DENY` | completed deny | CO, `year_built` 1955, `roof_age` 28, one water claim in 2023 for 8000, no credit row | 110, capped at 100, and 85 even if the water line is omitted |
-| `APP-RETRY` | timeout once, then completed approve | Same facts as `APP-APPROVE`, its own credit row | 10 |
+| `APP-APPROVE` | completed approve | WI, `year_built` 2015, `roof_age` 8, no claims, credit row 740 / 0 delinquencies | 0 |
+| `APP-REFER` | completed refer | OK, `year_built` 1960, `roof_age` null, no claims, credit row 740 / 0 | 45 |
+| `APP-DENY` | completed deny | CO, `year_built` 1955, `roof_age` 28, one water claim in 2023 for 8000, no credit row | 100, and 75 even if the water line is omitted |
+| `APP-RETRY` | timeout once, then completed approve | Same facts as `APP-APPROVE`, its own credit row | 0 |
 | `APP-TIMEOUT` | escalated | Any valid homeowners facts | Score is never produced |
 
 `name`, `construction`, and `coverage_amount` must be present and non-null on every fixture. Use distinct names. Coverage and construction do not add rubric points.
 
-`APP-DENY` includes the water claim so the model has a real line to cite. The deny band does not depend on that citation: omitting it leaves 85.
+`APP-DENY` includes the water claim so the model has a real line to cite. The deny band does not depend on that citation: omitting it leaves 75.
 
 ## 6. Agent behavior
 

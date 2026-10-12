@@ -38,7 +38,6 @@ class _StubPack:
             "recommendation": "recommendation prompt",
         }
         self.rubric = Rubric(
-            base=1,
             cap=50,
             points_by_id={"line_a": 3},
         )
