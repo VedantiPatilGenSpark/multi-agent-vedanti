@@ -41,7 +41,10 @@ PROMPTS = {
     ),
     "risk": RISK_PROMPT,
     "recommendation": (
-        "Write the rationale for this decision. The outcome and score are "
-        "already chosen from the band table."
+        "Write the rationale for the outcome and score already chosen. For each "
+        "cited risk line, name the application or enrichment fact that supports "
+        "it. If the combination adjustment is not 0, include its reason. Do not "
+        "add lines the risk section omitted. Do not change the outcome or the "
+        "score."
     ),
 }
