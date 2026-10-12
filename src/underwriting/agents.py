@@ -4,6 +4,7 @@ import copy
 import json
 
 from underwriting.audit import audit_risk_reply
+from underwriting.products.contract import outcome_for_score
 
 
 def intake_agent(raw_application: dict, adapter, pack):
@@ -57,5 +58,21 @@ def risk_scoring_agent(application, enrichment, adapter, pack, attempt: int = 1)
     return pack.risk_schema.model_validate({**reply, "credit": credit.model_dump()})
 
 
-def recommendation_agent(*args, **kwargs):
-    raise NotImplementedError
+def recommendation_agent(application, enrichment, risk, adapter, pack):
+    """Choose the band outcome, then ask the model only for the rationale."""
+    outcome = outcome_for_score(pack.bands, risk.score)
+    prompt = (
+        f"{pack.prompts['recommendation']}\n\n"
+        f"outcome: {outcome}\n\n"
+        f"{application.model_dump_json()}\n\n"
+        f"{enrichment.model_dump_json()}\n\n"
+        f"{risk.model_dump_json()}"
+    )
+    response = adapter.complete(
+        prompt,
+        _schema_without(pack.decision_schema, "outcome", "score"),
+    )
+    rationale = json.loads(response.text)["rationale"]
+    return pack.decision_schema.model_validate(
+        {"outcome": outcome, "score": risk.score, "rationale": rationale}
+    )
