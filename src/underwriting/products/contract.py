@@ -21,8 +21,6 @@ CALLABLE_NAMES = ("enrichment_lookup", "credit_lookup", "fixture")
 class Rubric(BaseModel):
     base: int
     cap: int
-    adjustment_min: int
-    adjustment_max: int
     points_by_id: dict[str, int]
 
 

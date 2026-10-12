@@ -40,8 +40,6 @@ class _StubPack:
         self.rubric = Rubric(
             base=1,
             cap=50,
-            adjustment_min=-5,
-            adjustment_max=5,
             points_by_id={"line_a": 3},
         )
         self.bands = _bands()

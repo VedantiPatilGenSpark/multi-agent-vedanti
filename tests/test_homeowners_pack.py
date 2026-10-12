@@ -54,8 +54,6 @@ def test_homeowners_pack_satisfies_the_contract(pack):
 def test_rubric_and_bands_are_pack_data(pack):
     assert pack.rubric.base == 10
     assert pack.rubric.cap == 100
-    assert pack.rubric.adjustment_min == -10
-    assert pack.rubric.adjustment_max == 10
     assert pack.rubric.points_by_id == RUBRIC_POINTS
     assert sorted((band.minimum, band.outcome) for band in pack.bands) == [
         (0, "approve"),
@@ -199,8 +197,6 @@ def test_section_schemas_accept_lookup_results(pack):
     pack.risk_schema.model_validate(
         {
             "lines": [{"id": "wind_hail_high", "points": 10, "evidence": "band is high"}],
-            "combination_adjustment": 0,
-            "combination_reason": "",
             "score": 10,
             "assessment": "low",
             "credit": credit.model_dump(),

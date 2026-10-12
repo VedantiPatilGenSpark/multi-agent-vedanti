@@ -49,8 +49,6 @@ class RiskLine(BaseModel):
 
 class Risk(BaseModel):
     lines: list[RiskLine]
-    combination_adjustment: int
-    combination_reason: str
     score: int
     assessment: str
     credit: CreditFile

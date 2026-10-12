@@ -40,8 +40,6 @@ def _success_payloads(applicant_id: str) -> list[dict]:
         {"note": "Territory note."},
         {
             "lines": [],
-            "combination_adjustment": 0,
-            "combination_reason": "",
             "score": 10,
             "assessment": "base only",
         },
@@ -152,8 +150,6 @@ def test_unusable_risk_score_escalates_without_a_second_model_call():
             {"note": "Territory note."},
             {
                 "lines": [],
-                "combination_adjustment": 0,
-                "combination_reason": "",
                 "score": 99,
                 "assessment": "wrong",
             },

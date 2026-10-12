@@ -63,8 +63,6 @@
         "evidence": "wind_hail_band is high"
       }
     ],
-    "combination_adjustment": 0,
-    "combination_reason": "",
     "score": 100,
     "assessment": "Base 10 plus the cited lines, capped at 100.",
     "credit": {

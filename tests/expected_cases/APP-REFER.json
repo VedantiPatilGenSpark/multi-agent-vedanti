@@ -44,8 +44,6 @@
         "evidence": "wind_hail_band is high"
       }
     ],
-    "combination_adjustment": 0,
-    "combination_reason": "",
     "score": 55,
     "assessment": "Base 10 plus missing roof, building age over 60, and high wind and hail.",
     "credit": {

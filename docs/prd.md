@@ -41,7 +41,7 @@ The live script prints the case and writes JSON at the end of the run. The trace
 | `raw_application` | harness, before intake | The fixture, unchanged |
 | `application` | intake | Normalized fields. Missing inputs stay null and are listed in `missing` |
 | `enrichment` | enrichment | Territory result plus the model’s note |
-| `risk` | risk, only after a passing audit | Credit result, cited lines, adjustment, score, assessment |
+| `risk` | risk, only after a passing audit | Credit result, cited lines, score, assessment |
 | `decision` | recommendation, only after a validated score | `outcome`, `rationale`, `score` |
 | `status` | harness | `running`, then `completed` or `escalated` |
 | `escalation` | harness, only on escalate | `null` on success |
@@ -71,7 +71,7 @@ The harness loads one pack. It must not import homeowners field names. A pack pr
 | Prompts | One string per agent | Sent with that step’s slice |
 | Enrichment lookup | `enrichment_lookup(application) -> EnrichmentReference` | Enrichment. The pack decides which fields of `application` to read and what reference data to return. The harness does not name that data. |
 | Credit lookup | `credit_lookup(applicant_id, attempt) -> CreditFile` | Risk. This name stays on the pack interface. Every product’s risk step looks up the person’s credit history. The pack supplies the rows and the timeout switch. It does not rename the tool. |
-| Rubric | Base, cap, adjustment range, line id → points | Risk prompt and the audit |
+| Rubric | Base, cap, line id → points | Risk prompt and the audit |
 | Band table | Ordered cutoffs | Mapping a validated score to an outcome |
 | Fixtures | JSON files keyed by `applicant_id` | Runs and tests |
 
@@ -81,16 +81,14 @@ Lookup and rubric failures that are business results (`no_file`, unknown territo
 
 Run this only on a model reply, never instead of one. Do not compute a homeowners score in Python.
 
-Let `cited` be the returned lines, `adjustment` the returned integer, `score` the returned integer, and `base`, `cap`, `adjustment_min`, `adjustment_max`, and `points_by_id` come from the pack.
+Let `cited` be the returned lines, `score` the returned integer, and `base`, `cap`, and `points_by_id` come from the pack.
 
 The reply passes only if all of the following are true:
 
 - Every cited line id is in `points_by_id`.
 - Every cited line’s `points` equal `points_by_id[id]`.
 - No duplicate line ids.
-- `adjustment` is an integer in `[adjustment_min, adjustment_max]`.
-- If `adjustment != 0`, `combination_reason` names two ids that are present in `cited`. If `adjustment == 0`, the reason may be empty. This rule is structural. It does not inspect homeowners facts.
-- `score == clamp(base + sum(cited points) + adjustment, 0, cap)`.
+- `score == clamp(base + sum(cited points), 0, cap)`.
 
 Evidence strings are stored and traced. Code does not check them against the case. A reply that omits a line the facts would support still passes. Code does not add the missing line and does not rescore.
 
@@ -176,15 +174,13 @@ The risk prompt contains this table and the instruction that building age as of 
 | `wind_hail_high` | 10 | wind-and-hail band is `high` |
 | `territory_unknown` | 10 | territory status is `unknown` |
 
-Pack constants: `base = 10`, `cap = 100`, adjustment range `-10` through `+10`.
+Pack constants: `base = 10`, `cap = 100`.
 
 The prompt tells the model that roof lines are mutually exclusive, building-age lines are mutually exclusive, and `no_credit_file` is not combined with bureau or delinquency lines. Code does not enforce those exclusions.
 
 The model returns:
 
 - `lines`: `{id, points, evidence}[]`
-- `combination_adjustment`: integer
-- `combination_reason`: string
 - `score`: integer
 - `assessment`: string
 
@@ -202,9 +198,9 @@ Code sets `outcome` and copies `score` onto the decision after the recommendatio
 
 ### 5.6 Fixtures
 
-Build the files so the rubric total, before any adjustment, sits far enough inside the band that ±10 cannot leave it. Claims use the structured `peril` field. There is no free-text claim description.
+Build the files so the rubric total sits inside the intended band. Claims use the structured `peril` field. There is no free-text claim description.
 
-| Id | Intended result | Facts that set the total | Total before adjustment |
+| Id | Intended result | Facts that set the total | Total |
 | --- | --- | --- | --- |
 | `APP-APPROVE` | completed approve | WI, `year_built` 2015, `roof_age` 8, no claims, credit row 740 / 0 delinquencies | 10 |
 | `APP-REFER` | completed refer | OK, `year_built` 1960, `roof_age` null, no claims, credit row 740 / 0 | 55 |
@@ -226,7 +222,7 @@ Each function calls the model exactly once per invocation. That call is the lab'
 | --- | --- | --- | --- |
 | Intake | Raw fixture and the intake prompt | Normalized application | `application` |
 | Enrichment | `application`, the `enrichment_lookup` result, enrichment prompt | Enrichment note. It must not fill null application fields or invent reference facts the lookup did not return | `enrichment`, including the lookup result |
-| Risk | `application`, `enrichment`, credit result, rubric, risk prompt | Lines, adjustment, score, assessment | `risk` only after the audit passes. Also store the credit result on that section |
+| Risk | `application`, `enrichment`, credit result, rubric, risk prompt | Lines, score, assessment | `risk` only after the audit passes. Also store the credit result on that section |
 | Recommendation | `application`, `enrichment`, `risk`, band already chosen, recommendation prompt | Rationale | `decision`, with code-owned `outcome` |
 
 Empty sections are not sent. Enrichment does not see the raw fixture or a null `risk`. Risk does not see `decision`.

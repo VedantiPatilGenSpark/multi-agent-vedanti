@@ -55,8 +55,6 @@ def _valid_risk_reply() -> str:
     return json.dumps(
         {
             "lines": [],
-            "combination_adjustment": 0,
-            "combination_reason": "",
             "score": 10,
             "assessment": "base only",
             "credit": {
@@ -125,8 +123,6 @@ def test_risk_returns_a_valid_reply_unchanged_and_attaches_the_credit_file():
     adapter = FakeAdapter(text=_valid_risk_reply(), input_tokens=4, output_tokens=5)
     risk = risk_scoring_agent(application, _enrichment(), adapter, pack, attempt=1)
     assert risk.lines == []
-    assert risk.combination_adjustment == 0
-    assert risk.combination_reason == ""
     assert risk.score == 10
     assert risk.assessment == "base only"
     assert risk.credit == CreditFile(
@@ -156,8 +152,6 @@ def test_risk_unusable_arithmetic_returns_no_section_and_calls_the_model_once():
         text=json.dumps(
             {
                 "lines": [],
-                "combination_adjustment": 0,
-                "combination_reason": "",
                 "score": 99,
                 "assessment": "wrong",
             }
@@ -184,8 +178,6 @@ def test_recommendation_uses_the_band_table_instead_of_the_model_outcome():
     application = _application("APP-REFER", state="OK", roof_age=None)
     risk = Risk(
         lines=[],
-        combination_adjustment=0,
-        combination_reason="",
         score=55,
         assessment="mid",
         credit=CreditFile(

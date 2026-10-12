@@ -34,8 +34,6 @@ class HomeownersPack:
     rubric = Rubric(
         base=10,
         cap=100,
-        adjustment_min=-10,
-        adjustment_max=10,
         points_by_id={
             "roof_missing_or_25_plus": 20,
             "roof_15_to_24": 10,

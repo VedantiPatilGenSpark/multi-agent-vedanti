@@ -5,8 +5,7 @@ Score this homeowners application. Building age as of 2026 is 2026 - year_built 
 
 base = 10
 cap = 100
-The combination adjustment is an integer from -10 through +10.
-Use a non-zero adjustment only when two cited lines compound or overlap, and name those two ids in combination_reason; otherwise use 0 and an empty reason.
+Set score to the base plus the points of the cited lines, then clamp it to 0 through the cap.
 
 | Id | Points | Apply when |
 | --- | --- | --- |
@@ -24,7 +23,7 @@ Use a non-zero adjustment only when two cited lines compound or overlap, and nam
 | wind_hail_high | 10 | wind-and-hail band is high |
 | territory_unknown | 10 | territory status is unknown |
 
-Return lines (id, points, evidence), combination_adjustment, combination_reason, score, and assessment.
+Return lines (id, points, evidence), score, and assessment.
 """.strip()
 
 PROMPTS = {
@@ -43,7 +42,7 @@ PROMPTS = {
     "recommendation": (
         "Write the rationale for the outcome and score already chosen. For each "
         "cited risk line, name the application or enrichment fact that supports "
-        "it. If the combination adjustment is not 0, include its reason. Do not "
+        "it. Do not "
         "add lines the risk section omitted. Do not change the outcome or the "
         "score."
     ),

@@ -28,8 +28,6 @@
   },
   "risk": {
     "lines": [],
-    "combination_adjustment": 0,
-    "combination_reason": "",
     "score": 10,
     "assessment": "Base score only.",
     "credit": {

@@ -19,12 +19,12 @@ This is the example of a product line pack. Each piece plugs into a fixed slot i
 | Prompts | One prompt fragment per agent, written for homeowners | Each agent call receives that fragment plus the case slice for its step. |
 | Territory table | SQLite rows keyed by state, with a wind-and-hail band and a wildfire band | Enrichment calls a lookup with the state from `application`. An unknown or missing state returns null bands. |
 | Credit table | SQLite rows keyed by `applicant_id`, with a bureau score and a delinquency count. The deny fixture has no row. | The risk step calls `credit_lookup`. A missing row is `no_file`, which is a normal result. |
-| Risk rubric | The point table below, including the base, the cap, and the allowed combination adjustment | The risk model applies this table and returns the lines, one adjustment, a score, and an assessment. Generic code checks internal consistency only: cited line ids exist, points match those lines, the adjustment is inside the allowed range, and the arithmetic equals the score. A reply that omits a true line still passes. Code does not rescore. If the check fails, the harness does not retry the model and does not write `risk`. It escalates with the reason that the risk score was unusable. |
+| Risk rubric | The point table below, including the base and the cap | The risk model applies this table and returns the lines, a score, and an assessment. Generic code checks internal consistency only: cited line ids exist, points match those lines, and the score equals the base plus those points, clamped to the cap. A reply that omits a true line still passes. Code does not rescore. If the check fails, the harness does not retry the model and does not write `risk`. It escalates with the reason that the risk score was unusable. |
 | Band table | Approve below 40, refer from 40 through 69, deny at 70 and above | After a validated score is written, recommendation maps it through this table. The model writes the rationale and cannot change the band. |
 
 ### Homeowners risk rubric
 
-The model starts at the base, adds each line that applies, then applies one combination adjustment. The total is capped at the maximum. The adjustment has to name two cited lines. Points below are the homeowners pack’s values, not pipeline constants.
+The model starts at the base, adds each line that applies, and caps the total at the maximum. Points below are the homeowners pack’s values, not pipeline constants.
 
 | Line | Points |
 | --- | --- |
@@ -43,7 +43,7 @@ The model starts at the base, adds each line that applies, then applies one comb
 | Wind and hail band high | 10 |
 | Territory unknown | 10 |
 
-The combination adjustment is an integer from −10 to +10. The score cannot go above 100.
+The score cannot go above 100.
 
 The lab’s timeout switch is fixture configuration for two homeowners applicant ids. It sits in front of the credit query and raises on chosen attempt numbers. It is not a harness branch, and it is not a rule in the rubric. A second product would not inherit those ids. A fixed 0.2s backoff sits between attempt 1 and attempt 2. When the second attempt also raises, `status` is `escalated`, `risk` stays empty, and the case has no approve, deny, or refer outcome. Recommendation is not called. `escalated` is the failure flag. It is separate from a completed `refer`.
 
