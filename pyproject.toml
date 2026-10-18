@@ -4,6 +4,7 @@ version = "0.1.0"
 description = "Multi-agent underwriting pipeline"
 requires-python = ">=3.11"
 dependencies = [
+    "boto3>=1.43.114",
     "pydantic>=2",
 ]
 

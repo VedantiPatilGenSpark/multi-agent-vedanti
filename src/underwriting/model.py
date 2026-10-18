@@ -7,7 +7,10 @@ from collections.abc import Callable
 from dataclasses import dataclass
 from typing import Protocol
 
+import boto3
+
 _DEFAULT_HOST = "http://host.docker.internal:11434"
+_QWEN_MODEL_ID = "qwen.qwen3-32b-v1:0"
 
 
 @dataclass(frozen=True)
@@ -78,6 +81,36 @@ class OllamaAdapter:
             text=body["response"],
             input_tokens=body["prompt_eval_count"],
             output_tokens=body["eval_count"],
+        )
+
+
+class BedrockAdapter:
+    """Calls Bedrock InvokeModel for Qwen3 32B. Does not invent a score."""
+
+    def __init__(self, client=None) -> None:
+        self._client = client or boto3.client("bedrock-runtime", region_name="us-east-1")
+
+    def complete(self, prompt: str, json_schema: dict) -> ModelResponse:
+        response = self._client.invoke_model(
+            modelId=_QWEN_MODEL_ID,
+            body=json.dumps(
+                {
+                    "messages": [{"role": "user", "content": prompt}],
+                    "response_format": {
+                        "type": "json_schema",
+                        "json_schema": {"name": "risk_reply", "schema": json_schema},
+                    },
+                }
+            ),
+            contentType="application/json",
+            accept="application/json",
+        )
+        payload = json.loads(response["body"].read())
+        usage = payload.get("usage") or {}
+        return ModelResponse(
+            text=payload["choices"][0]["message"]["content"],
+            input_tokens=usage.get("prompt_tokens", 0),
+            output_tokens=usage.get("completion_tokens", 0),
         )
 
 
