@@ -1,0 +1,17 @@
+{
+  "family": "risk-scoring-agent",
+  "cpu": "512",
+  "memory": "1024",
+  "networkMode": "awsvpc",
+  "requiresCompatibilities": ["FARGATE"],
+  "taskRoleArn": "arn:aws:iam::123456789012:role/risk-scoring-agent",
+  "executionRoleArn": "arn:aws:iam::123456789012:role/risk-scoring-agent-execution",
+  "containerDefinitions": [
+    {
+      "name": "risk-scoring-agent",
+      "image": "123456789012.dkr.ecr.us-east-1.amazonaws.com/risk-scoring-agent:latest",
+      "command": ["python", "scripts/run_risk_agent.py"],
+      "essential": true
+    }
+  ]
+}
