@@ -5,7 +5,7 @@ import pytest
 
 from underwriting.model import BedrockAdapter, ModelResponse
 
-_MODEL_ID = "amazon.nova-lite-v1:0"
+_MODEL_ID = "qwen.qwen3-32b-v1:0"
 
 
 class _Body:
@@ -45,22 +45,16 @@ def _offline(monkeypatch):
         monkeypatch.delenv(name, raising=False)
 
 
-def _reply(score: int = 14, usage: dict | None = None) -> dict:
+def _reply(content: str = '{"score": 14}', usage: dict | None = None) -> dict:
     payload = {
-        "output": {
-            "message": {
-                "role": "assistant",
-                "content": [
-                    {
-                        "toolUse": {
-                            "toolUseId": "tool-1",
-                            "name": "json_reply",
-                            "input": {"score": score},
-                        }
-                    }
-                ],
+        "choices": [
+            {
+                "message": {
+                    "role": "assistant",
+                    "content": content,
+                }
             }
-        }
+        ]
     }
     if usage is not None:
         payload["usage"] = usage
@@ -74,10 +68,10 @@ def _body(call: dict) -> dict:
     return json.loads(raw)
 
 
-def test_bedrock_adapter_invokes_nova_lite_and_returns_the_json_object():
+def test_bedrock_adapter_invokes_qwen_and_returns_the_json_text():
     schema = {"type": "object", "properties": {"score": {"type": "integer"}}}
     client = _Client(
-        _reply(usage={"inputTokens": 11, "outputTokens": 7, "totalTokens": 18})
+        _reply(usage={"prompt_tokens": 11, "completion_tokens": 7, "total_tokens": 18})
     )
     result = BedrockAdapter(client=client).complete("risk prompt", schema)
 
@@ -85,20 +79,11 @@ def test_bedrock_adapter_invokes_nova_lite_and_returns_the_json_object():
     call = client.calls[0]
     assert call["modelId"] == _MODEL_ID
     body = _body(call)
-    assert body["schemaVersion"] == "messages-v1"
-    assert body["messages"] == [
-        {"role": "user", "content": [{"text": "risk prompt"}]}
-    ]
-    assert body["toolConfig"]["tools"] == [
-        {
-            "toolSpec": {
-                "name": "json_reply",
-                "description": "Return a JSON object matching the schema.",
-                "inputSchema": {"json": schema},
-            }
-        }
-    ]
-    assert body["toolConfig"]["toolChoice"] == {"tool": {"name": "json_reply"}}
+    assert body["messages"] == [{"role": "user", "content": "risk prompt"}]
+    assert body["response_format"] == {
+        "type": "json_schema",
+        "json_schema": {"name": "risk_reply", "schema": schema},
+    }
     assert result == ModelResponse(text='{"score": 14}', input_tokens=11, output_tokens=7)
 
 
@@ -121,7 +106,7 @@ def test_bedrock_adapter_defaults_to_bedrock_runtime_in_us_east_1(monkeypatch):
 
     def client(service_name, **kwargs):
         created.append((service_name, kwargs))
-        return _Client(_reply(usage={"inputTokens": 1, "outputTokens": 2}))
+        return _Client(_reply(usage={"prompt_tokens": 1, "completion_tokens": 2}))
 
     monkeypatch.setattr(model.boto3, "client", client)
     result = BedrockAdapter().complete("risk prompt", {"type": "object"})

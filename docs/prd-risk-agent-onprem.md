@@ -127,7 +127,7 @@ Do not invent the AWS score. When a real AWS run log exists, replace the marker 
 
 Use this description if the AWS branch is not available. Do not create these resources.
 
-The other deployment runs the same script and the same `APP-APPROVE` input. The model call is `bedrock:InvokeModel` on `amazon.nova-lite-v1:0` in `us-east-1`. The task role allows that action and nothing else. ECS would run it as a Fargate task with 0.5 vCPU and 1 GB, in a private subnet, with no inbound rules and outbound TCP 443. That role is a document. It was not created in IAM. Applicant text would leave the container for Bedrock.
+The other deployment runs the same script and the same `APP-APPROVE` input. The model call is `bedrock:InvokeModel` on `qwen.qwen3-32b-v1:0` in `us-east-1`. The task role allows that action and nothing else. ECS would run it as a Fargate task with 0.5 vCPU and 1 GB, in a private subnet, with no inbound rules and outbound TCP 443. That role is a document. It was not created in IAM. Applicant text would leave the container for Bedrock.
 
 ## 11. Done when
 

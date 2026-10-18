@@ -82,10 +82,10 @@ Add `BedrockAdapter` in `src/underwriting/model.py`. Keep `FakeAdapter` and the 
 `BedrockAdapter.complete` calls `bedrock-runtime` `InvokeModel` for this model only:
 
 ```text
-amazon.nova-lite-v1:0
+qwen.qwen3-32b-v1:0
 ```
 
-Region `us-east-1`. Send the prompt and ask for a JSON object matching the schema the agent passes. Map the service's input and output token counts onto `ModelResponse`. If the body has no token counts, use `0`. Add `boto3` as a dependency on this branch.
+Region `us-east-1`. Send the prompt as the user message. Pass the schema the agent provides in `response_format.json_schema.schema`, and return the message content as `ModelResponse.text`. Map `prompt_tokens` and `completion_tokens` onto `ModelResponse`. If the body has no token counts, use `0`. Add `boto3` as a dependency on this branch.
 
 Unit-test the adapter with a fake client. The test must not open a socket and must not require AWS credentials.
 
@@ -108,7 +108,7 @@ The principal is `ecs-tasks.amazonaws.com`. The action is `sts:AssumeRole`.
 One statement. Action `bedrock:InvokeModel`. Resource:
 
 ```text
-arn:aws:bedrock:us-east-1::foundation-model/amazon.nova-lite-v1:0
+arn:aws:bedrock:us-east-1::foundation-model/qwen.qwen3-32b-v1:0
 ```
 
 No `*`. No S3, DynamoDB, logs, or ECR actions. The credit row, rubric, and test input are files in the image, so they need no AWS permission. The printed score goes to the process stdout.
@@ -182,7 +182,7 @@ Update `README.md` so the only run instructions are the risk-agent script, the D
 - `risk_scoring_agent` still looks up credit, calls the model once, audits, and attaches the credit file.
 - The container command is `python scripts/run_risk_agent.py`, and the test input is the `APP-APPROVE` slice in section 5.
 - `deploy/iam-trust-policy.json`, `deploy/iam-permissions-policy.json`, `deploy/task-definition.json`, and `deploy/network.md` match section 8.
-- The permissions policy contains only `bedrock:InvokeModel` on `amazon.nova-lite-v1:0`.
+- The permissions policy contains only `bedrock:InvokeModel` on `qwen.qwen3-32b-v1:0`.
 - `docker build` succeeded. `deploy/build.log` and `deploy/run.log` exist.
 - `docs/aws-deployment.md` and the README match this branch.
 - `pytest` passes without AWS and without Ollama.
