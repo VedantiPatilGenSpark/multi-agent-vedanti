@@ -48,28 +48,26 @@ The cited lines are `roof_age_0_to_25` for 10 points and `building_age_0_to_40` 
 
 ## Comparison
 
-`docs/aws-deployment.md` is not on this branch, so this section uses the AWS design for the same script and the same `APP-APPROVE` input. That design calls `bedrock:InvokeModel` on `qwen.qwen3-32b-v1:0` in `us-east-1`. The task role allows that action on that model and nothing else. ECS would run the container as a Fargate task with 0.5 vCPU and 1 GB, in a private subnet, with no inbound rules and outbound TCP 443. That role is a document. It was not created in IAM. Applicant text would leave the container for Bedrock.
-
-### Cost
-
-This run spends local compute and creates no per-call invoice. The hosted model bills per token for `bedrock:InvokeModel` on `qwen.qwen3-32b-v1:0`.
-
-### Complexity
-
-This deployment is one local process: Ollama on the machine, and a container that reads the test file and calls that process. The AWS design adds ECR, a task definition, a task role, and a private subnet.
+The AWS branch ran the same script on the same `APP-APPROVE` input. The model call was `bedrock:InvokeModel` on `qwen.qwen3-32b-v1:0` in `us-east-1`. Applicant text left the process for Bedrock. The call used a short-term Bedrock API key for the developer identity. The task role, the ECR push, and the Fargate task were documents in that branch's `deploy/` directory. They were not created in the account, and the paper task role was not what allowed the call.
 
 ### Output quality
 
-This run's score is 14. The lines are `roof_age_0_to_25` (10) and `building_age_0_to_40` (4).
+Both runs scored 14 and cited the same lines: `roof_age_0_to_25` for 10 points and `building_age_0_to_40` for 4 points. Both attached the same credit file: `found`, bureau score 740, delinquencies 0.
 
 ```text
-AWS_RUN_SCORE: pending
+AWS_RUN_SCORE: 14
 ```
 
-A real AWS run log is not on this branch. This note does not invent that score. When the log exists, replace the marker with the AWS score and lines for the same input and update this paragraph.
+The evidence strings and the assessment wording differ. On this branch, the building-age evidence is `year_built is 2015, so building age is 2026 - 2015 = 11`. On the AWS branch, that evidence is `building age is 2026 - 2015 = 11`. The roof-age evidence is `roof_age is 8` in both logs.
+
+The AWS branch printed:
+
+```json
+{"lines": [{"id": "roof_age_0_to_25", "points": 10, "evidence": "roof_age is 8"}, {"id": "building_age_0_to_40", "points": 4, "evidence": "building age is 2026 - 2015 = 11"}], "score": 14, "assessment": "The score is 14. The applicant has a roof that is 8 years old (adding 10 points) and a building that is 11 years old (adding 4 points). No other lines in the rubric apply based on the provided facts.", "credit": {"applicant_id": "APP-APPROVE", "file_status": "found", "bureau_score": 740, "delinquencies": 0}}
+```
 
 ## Recommendation
 
 Give this on-prem deployment to a client who cannot let applicant data leave their network. The weights stay on the machine, and the prompt stays on loopback or `host.docker.internal`.
 
-Give the AWS design to a client who can let applicant text leave the container. That deployment calls Bedrock `qwen.qwen3-32b-v1:0` from a private Fargate task under a role that allows only `bedrock:InvokeModel` on that model.
+Give the AWS deployment to a client who can let applicant text leave the process for Bedrock `qwen.qwen3-32b-v1:0`.
