@@ -45,6 +45,16 @@ A direct run of `python scripts/run_risk_agent.py` also writes `deploy/metrics.l
 | `latency_ms` | Wall time of that model call. |
 | `invoiced_cost_usd` | `0`. Ollama does not bill. |
 
+The container run wrote:
+
+```text
+model: qwen3:8b
+input_tokens: 609
+output_tokens: 175
+latency_ms: 7120
+invoiced_cost_usd: 0
+```
+
 Complexity is not in this file. This deployment is one container plus Ollama on the same machine.
 
 ## Architecture
@@ -66,6 +76,16 @@ The cited lines are `roof_age_0_to_25` for 10 points and `building_age_0_to_40` 
 ## Comparison
 
 The AWS branch ran the same script on the same `APP-APPROVE` input. The model call was `bedrock:InvokeModel` on `qwen.qwen3-32b-v1:0` in `us-east-1`. Applicant text left the process for Bedrock. The call used a short-term Bedrock API key for the developer identity. The task role, the ECR push, and the Fargate task were documents in that branch's `deploy/` directory. They were not created in the account, and the paper task role was not what allowed the call.
+
+### Cost
+
+This run used 609 input tokens and 175 output tokens and finished the model call in 7120 ms. The invoiced cost is $0.
+
+The AWS call is `qwen.qwen3-32b-v1:0` on Bedrock, which bills per token. This branch does not have that run's token counts, so the dollar figure for AWS is not filled in here.
+
+### Complexity
+
+On-prem is one container plus Ollama on the same machine. The AWS design adds a task role, an execution role, an ECR image, a Fargate task definition, a private subnet, a security group, and a NAT gateway or Bedrock VPC endpoint. Those AWS objects were documents. They were not created in the account.
 
 ### Output quality
 
