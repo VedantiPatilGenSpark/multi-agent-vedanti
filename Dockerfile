@@ -9,4 +9,4 @@ COPY scripts ./scripts
 
 RUN pip install --no-cache-dir -e ".[dev]"
 
-CMD ["pytest"]
+CMD ["python", "scripts/run_risk_agent.py"]
