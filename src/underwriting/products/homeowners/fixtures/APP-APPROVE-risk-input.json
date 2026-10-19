@@ -1,0 +1,19 @@
+{
+  "application": {
+    "applicant_id": "APP-APPROVE",
+    "name": "Morgan Ellis",
+    "state": "WI",
+    "year_built": 2015,
+    "roof_age": 8,
+    "construction": "frame",
+    "coverage_amount": 350000,
+    "prior_claims": [],
+    "missing": []
+  },
+  "enrichment": {
+    "status": "found",
+    "wind_hail_band": "low",
+    "wildfire_band": "low",
+    "note": "Found. Wind and hail band is low. Wildfire band is low."
+  }
+}
