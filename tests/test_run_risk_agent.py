@@ -145,6 +145,29 @@ def test_timeout_prints_and_exits_nonzero_without_calling_the_model(monkeypatch,
     assert adapter.calls == []
 
 
+def test_writes_token_metrics_to_a_file_and_leaves_stdout_as_json(tmp_path, capsys):
+    module = _load()
+    path = tmp_path / "metrics.log"
+    assert module.main(_adapter(_valid_risk_reply()), metrics_path=path) == 0
+    assert json.loads(capsys.readouterr().out)["score"] == 0
+    lines = path.read_text().splitlines()
+    assert lines[0] == "model: unspecified"
+    assert "input_tokens: 4" in lines
+    assert "output_tokens: 5" in lines
+    assert lines[-1] == "invoiced_cost_usd: 0"
+    latency = int(lines[3].split(": ", 1)[1])
+    assert latency >= 0
+
+
+def test_audit_error_does_not_write_metrics(tmp_path, capsys):
+    module = _load()
+    path = tmp_path / "metrics.log"
+    adapter = _adapter(json.dumps({"lines": [], "score": 99, "assessment": "wrong"}))
+    assert module.main(adapter, metrics_path=path) != 0
+    assert not path.exists()
+    assert "RiskAuditError" in capsys.readouterr().out
+
+
 def test_success_does_not_write_a_case_file(tmp_path, monkeypatch, capsys):
     module = _load()
     monkeypatch.chdir(tmp_path)

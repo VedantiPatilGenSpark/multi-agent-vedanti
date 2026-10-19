@@ -25,10 +25,27 @@ The container command was:
 
 ```bash
 docker build -t risk-scoring-agent .
-docker run --rm -e OLLAMA_HOST=http://host.docker.internal:11434 risk-scoring-agent
+docker run --rm \
+  -e OLLAMA_HOST=http://host.docker.internal:11434 \
+  -v "$(pwd)/deploy:/app/deploy" \
+  risk-scoring-agent
 ```
 
+The volume is required. `docker run --rm` deletes the container filesystem, and the metrics file is written at `/app/deploy/metrics.log`.
+
 The run published no ports. The image contains the package, the test input, the pack, and `scripts/run_risk_agent.py`. It does not contain the model weights. Ollama stayed on the host.
+
+A direct run of `python scripts/run_risk_agent.py` also writes `deploy/metrics.log`. Stdout stays the risk JSON. The metrics file is gitignored, same as `deploy/run.log`.
+
+| Field | Meaning |
+| --- | --- |
+| `model` | The Ollama tag. This deployment uses `qwen3:8b`. |
+| `input_tokens` | Ollama `prompt_eval_count` for the one model call. |
+| `output_tokens` | Ollama `eval_count` for that call. |
+| `latency_ms` | Wall time of that model call. |
+| `invoiced_cost_usd` | `0`. Ollama does not bill. |
+
+Complexity is not in this file. This deployment is one container plus Ollama on the same machine.
 
 ## Architecture
 

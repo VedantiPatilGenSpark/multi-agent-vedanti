@@ -112,7 +112,7 @@ With uv: `uv run python scripts/run_risk_agent.py`.
 
 `OLLAMA_HOST` is the Ollama address. The code default is `http://host.docker.internal:11434`, so a container can reach Ollama on the host. On the machine where Ollama is running, without Docker, use `http://127.0.0.1:11434`.
 
-The script prints the risk JSON to stdout and exits 0. It does not write a case file.
+The script prints the risk JSON to stdout and exits 0. It does not write a case file. A direct run also writes `deploy/metrics.log` with the model name, input tokens, output tokens, model-call latency, and `invoiced_cost_usd: 0`. That file is gitignored.
 
 ### Docker
 
@@ -120,10 +120,13 @@ From the repository root, with Docker running and Ollama already serving `qwen3:
 
 ```bash
 docker build -t risk-scoring-agent .
-docker run --rm -e OLLAMA_HOST=http://host.docker.internal:11434 risk-scoring-agent
+docker run --rm \
+  -e OLLAMA_HOST=http://host.docker.internal:11434 \
+  -v "$(pwd)/deploy:/app/deploy" \
+  risk-scoring-agent
 ```
 
-The run publishes no ports. The image installs the package. It contains the test input, the pack, and the script. It does not contain the model weights. Ollama stays on the host.
+The run publishes no ports. The image installs the package. It contains the test input, the pack, and the script. It does not contain the model weights. Ollama stays on the host. The volume keeps `deploy/metrics.log` after `docker run --rm` deletes the container.
 
 On Linux, add `--add-host=host.docker.internal:host-gateway` so that hostname resolves. Docker Desktop on Mac and Windows already provides it.
 

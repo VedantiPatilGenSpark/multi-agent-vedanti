@@ -60,6 +60,7 @@ class OllamaAdapter:
 
     def __init__(self, post: Callable[[str, dict], dict] | None = None) -> None:
         self._post = post or _post_json
+        self.model = "qwen3:8b"
         host = os.environ.get("OLLAMA_HOST", _DEFAULT_HOST).rstrip("/")
         self._url = f"{host}/api/generate"
 
@@ -67,7 +68,7 @@ class OllamaAdapter:
         body = self._post(
             self._url,
             {
-                "model": "qwen3:8b",
+                "model": self.model,
                 "prompt": prompt,
                 "stream": False,
                 "think": False,
