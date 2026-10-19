@@ -11,11 +11,11 @@ Do not implement the AWS simulation. Do not add a Bedrock adapter. Do not commit
 
 Turn the current four-agent underwriting repo into a single runnable risk-scoring agent, and run it against a local Ollama model. This is the simulated on-prem deployment. The model process is on the same machine as the agent. The prompt does not go to an external API.
 
-The container runs once, scores one prepared homeowners case, and exits. A smaller open-weight model may score differently than a hosted model. Record that difference. Do not hide a bad score.
+The container runs once, scores one prepared homeowners case, and exits. Local `qwen3:8b` may score differently than hosted `qwen.qwen3-32b-v1:0`. Record that difference. Do not hide a bad score.
 
 ## 2. Out of scope
 
-Do not build a UI, a queue, a web service, or a long-running server. Do not keep the harness as the thing the container runs. Do not call Bedrock, S3, DynamoDB, or any other AWS API. Do not write IAM policies, a task definition, or a VPC design on this branch. Do not invent a risk score if the local model returns invalid JSON. Do not point this branch at `qwen3:8b` unless the smaller models in section 7 have already failed.
+Do not build a UI, a queue, a web service, or a long-running server. Do not keep the harness as the thing the container runs. Do not call Bedrock, S3, DynamoDB, or any other AWS API. Do not write IAM policies, a task definition, or a VPC design on this branch. Do not invent a risk score if the local model returns invalid JSON. The live model is `qwen3:8b`. Do not point this branch at `qwen3:1.7b`, `qwen3:4b`, or `qwen3:32b`.
 
 ## 3. Branch and result
 
@@ -79,9 +79,9 @@ On `TimeoutError`, `RiskAuditError`, or a validation error, print the error and 
 
 Keep `OllamaAdapter` in `src/underwriting/model.py`. Keep `FakeAdapter` offline for tests.
 
-Change the adapter's model from `qwen3:8b` to `qwen3:1.7b`. Keep thinking off, and keep passing the JSON schema as the response format. `OLLAMA_HOST` stays overridable. The default for a container on this Mac is `http://host.docker.internal:11434`, which is Ollama on the same machine. Document that a run on the host without Docker uses `http://127.0.0.1:11434`.
+Leave the adapter's model at `qwen3:8b`. Keep thinking off, and keep passing the JSON schema as the response format. `OLLAMA_HOST` stays overridable. The default for a container on this Mac is `http://host.docker.internal:11434`, which is Ollama on the same machine. Document that a run on the host without Docker uses `http://127.0.0.1:11434`.
 
-Pull `qwen3:1.7b` before the live run. If that model does not return JSON that passes schema validation and `audit_risk_reply`, stop using it, pull `qwen3:4b`, point the adapter at `qwen3:4b`, and run once more. Record both attempts in the deployment notes. Use `qwen3:8b` only if `qwen3:4b` also fails validation, and record that too.
+Pull `qwen3:8b` before the live run. If that model does not return JSON that passes schema validation and `audit_risk_reply`, record the failure in the deployment notes. Do not switch models. Do not invent a score.
 
 Do not send the prompt to a hosted API.
 
@@ -127,7 +127,7 @@ Do not invent the AWS score. When a real AWS run log exists, replace the marker 
 
 Use this description if the AWS branch is not available. Do not create these resources.
 
-The other deployment runs the same script and the same `APP-APPROVE` input. The model call is `bedrock:InvokeModel` on `amazon.nova-lite-v1:0` in `us-east-1`. The task role allows that action and nothing else. ECS would run it as a Fargate task with 0.5 vCPU and 1 GB, in a private subnet, with no inbound rules and outbound TCP 443. That role is a document. It was not created in IAM. Applicant text would leave the container for Bedrock.
+The other deployment runs the same script and the same `APP-APPROVE` input. The model call is `bedrock:InvokeModel` on `qwen.qwen3-32b-v1:0` in `us-east-1`. The task role allows that action on that model and nothing else. ECS would run it as a Fargate task with 0.5 vCPU and 1 GB, in a private subnet, with no inbound rules and outbound TCP 443. That role is a document. It was not created in IAM. Applicant text would leave the container for Bedrock.
 
 ## 11. Done when
 
@@ -135,7 +135,7 @@ The other deployment runs the same script and the same `APP-APPROVE` input. The 
 - `intake_agent`, `enrichment_agent`, `recommendation_agent`, the harness, and `scripts/run_traces.py` are gone.
 - `risk_scoring_agent` still looks up credit, calls the model once, audits, and attaches the credit file.
 - The container command is `python scripts/run_risk_agent.py`, and the test input matches section 5.
-- The live model is local Ollama. The saved run names the model tag that produced it.
+- The live model is local Ollama `qwen3:8b`. The saved run names that tag.
 - `docker build` succeeded. `deploy/run.log` contains a risk JSON for `APP-APPROVE`.
 - `docs/onprem-deployment.md` covers the local model, the missing IAM role, the loopback network, the cost and complexity comparison, and a recommendation for a client with a data-residency requirement and a client without one.
 - `pytest` passes without Ollama and without AWS.
