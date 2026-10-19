@@ -109,7 +109,7 @@ def test_script_prints_the_risk_json_and_exits_zero(monkeypatch, capsys, tmp_pat
     assert len(calls) == 1
     args, kwargs = calls[0]
     assert _attempt(args, kwargs) == 1
-    assert _arg(args, kwargs, "adapter", 2) is created[0]
+    assert _arg(args, kwargs, "adapter", 2)._inner is created[0]
     assert isinstance(_arg(args, kwargs, "pack", 3), HomeownersPack)
     application = _arg(args, kwargs, "application", 0)
     enrichment = _arg(args, kwargs, "enrichment", 1)
@@ -131,6 +131,41 @@ def test_script_prints_agent_errors_and_does_not_retry(monkeypatch, capsys, erro
 
     assert str(error) in capsys.readouterr().out
     assert len(calls) == 1
+
+
+def test_writes_metrics_and_leaves_stdout_as_the_risk_json(capsys, tmp_path):
+    from underwriting.model import FakeAdapter
+
+    script = _load_script()
+    adapter = FakeAdapter(
+        text=json.dumps({"lines": [], "score": 0, "assessment": "no cited lines"}),
+        input_tokens=11,
+        output_tokens=7,
+    )
+    adapter.model = "qwen.qwen3-32b-v1:0"
+    path = tmp_path / "metrics.log"
+
+    assert script.main(adapter, metrics_path=path) == 0
+
+    assert json.loads(capsys.readouterr().out)["score"] == 0
+    lines = path.read_text().splitlines()
+    assert lines[0] == "model: qwen.qwen3-32b-v1:0"
+    assert lines[1] == "input_tokens: 11"
+    assert lines[2] == "output_tokens: 7"
+    assert int(lines[3].split(": ", 1)[1]) >= 0
+    assert lines[4] == "invoiced_cost_usd: 0.00000585"
+
+
+def test_agent_error_does_not_write_metrics(monkeypatch, capsys, tmp_path):
+    script = _load_script()
+    _install_adapter(monkeypatch, script)
+    _install_agent(monkeypatch, script, error=RiskAuditError("score does not match"))
+    path = tmp_path / "metrics.log"
+
+    assert script.main(metrics_path=path) != 0
+
+    assert not path.exists()
+    assert "score does not match" in capsys.readouterr().out
 
 
 def test_script_prints_a_validation_error_and_skips_the_agent(monkeypatch, capsys, tmp_path):

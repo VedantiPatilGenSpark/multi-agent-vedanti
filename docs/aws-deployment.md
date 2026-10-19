@@ -44,7 +44,7 @@ The local run used the same idea: `docker run --rm` with no published ports.
 
 ## What the container can change
 
-The process can write files inside its own container filesystem. This script does not. It prints the score to stdout and exits. `docker run --rm` deletes that filesystem when the process exits.
+The process can write files inside its own container filesystem. The script prints the score to stdout. A direct run also writes `deploy/metrics.log` with the model id, input tokens, output tokens, `InvokeModel` latency, and the us-east-1 on-demand list price for `qwen.qwen3-32b-v1:0` ($0.15 per million input tokens and $0.60 per million output tokens). `docker run --rm` deletes the container filesystem, so the run mounts `deploy/` and the metrics file remains on the host.
 
 The only call that leaves the container is `bedrock-runtime` `InvokeModel` for `qwen.qwen3-32b-v1:0` in `us-east-1`.
 

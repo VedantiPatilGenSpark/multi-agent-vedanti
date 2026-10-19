@@ -88,11 +88,12 @@ class BedrockAdapter:
     """Calls Bedrock InvokeModel for Qwen3 32B. Does not invent a score."""
 
     def __init__(self, client=None) -> None:
+        self.model = _QWEN_MODEL_ID
         self._client = client or boto3.client("bedrock-runtime", region_name="us-east-1")
 
     def complete(self, prompt: str, json_schema: dict) -> ModelResponse:
         response = self._client.invoke_model(
-            modelId=_QWEN_MODEL_ID,
+            modelId=self.model,
             body=json.dumps(
                 {
                     "messages": [{"role": "user", "content": prompt}],

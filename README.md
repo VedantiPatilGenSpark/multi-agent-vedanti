@@ -52,7 +52,7 @@ export AWS_DEFAULT_REGION=us-east-1
 python scripts/run_risk_agent.py
 ```
 
-A successful run prints the risk JSON and exits 0. A timeout, an audit failure, a validation error, or an AWS denial is printed and the process exits non-zero.
+A successful run prints the risk JSON and exits 0. A direct run also writes `deploy/metrics.log`. That file is gitignored. A timeout, an audit failure, a validation error, or an AWS denial is printed and the process exits non-zero. The metrics file is not written on those failures.
 
 ### Docker
 
@@ -70,7 +70,8 @@ export AWS_BEARER_TOKEN_BEDROCK='paste-the-key-here'
 docker run --rm \
   -e AWS_BEARER_TOKEN_BEDROCK \
   -e AWS_DEFAULT_REGION=us-east-1 \
+  -v "$(pwd)/deploy:/app/deploy" \
   risk-scoring-agent > deploy/run.log 2>&1
 ```
 
-`deploy/build.log` is the saved build transcript. `deploy/run.log` is the saved run.
+`deploy/build.log` is the saved build transcript. `deploy/run.log` is the saved score. `deploy/metrics.log` is the token and cost log for that same run. The volume is required because `docker run --rm` deletes the container filesystem.
